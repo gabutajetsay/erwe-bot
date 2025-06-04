@@ -1,5 +1,5 @@
-// import Module 
-const { makeWASocket, useMultiFileAuthState } = require("@whiskeysockets/baileys")
+// Import Module 
+const { makeWASocket, useMultiFileAuthState, fetchLatestBaileysVersion } = require("baileys")
 const pino = require("pino")
 const chalk = require("chalk")
 const readline = require("readline")
@@ -25,31 +25,40 @@ async function question(promt) {
     
 }
 
-// Koneksi WhatsApp
 async function connectToWhatsApp() {
-    console.log(chalk.blue("🎁 Memulai Koneksi Ke WhatsApp"))
+  const { state, saveCreds } = await useMultiFileAuthState('./LenwySesi')
+  
+  // Fetch latest version info
+  const { version, isLatest } = await fetchLatestBaileysVersion()
+  console.log(`using WA v${version.join('.')}, isLatest: ${isLatest}`)
 
-    // Menyimpan Sesi Login
-    // LenwySesi Menjadi Penyimpanan Sesi Login
-    const { state, saveCreds } = await useMultiFileAuthState("./LenwySesi")
-
-    // Membuat Koneksi WhatsApp
-    const lenwy = makeWASocket({
-        logger: pino({ level: "silent"}),
-        printQRInTerminal: !usePairingCode,
-        auth: state, // Pakai Sesi Yang Ada
-        browser: ["Ubuntu", "Chrome", "20.0.04"], // Simulasi Browser
-        version: [2, 3000, 1015901307] // Versi WhatsApp
-    })
-
-    // Metode Pairing Code
-    if (usePairingCode && !lenwy.authState.creds.registered) {
-        console.log(chalk.green("☘  Masukkan Nomor Dengan Awal 62"))
-        const phoneNumber = await question("> ")
-        const code = await lenwy.requestPairingCode(phoneNumber.trim())
-        console.log(chalk.cyan(`🎁  Pairing Code : ${code}`))
+  const lenwy = makeWASocket({
+    logger: pino({ level: "silent" }),
+    printQRInTerminal: !usePairingCode,
+    auth: state,
+    browser: ['Ubuntu', 'Chrome', '20.0.04'],
+    version: version,
+    syncFullHistory: true,
+    generateHighQualityLinkPreview: true,
+    getMessage: async (key) => {
+      if (store) {
+        const msg = await store.loadMessage(key.remoteJid, key.id)
+        return msg?.message || undefined
+      }
+      return proto.Message.fromObject({})
     }
+  })
 
+  // Handle pairing code if needed
+  if (usePairingCode && !lenwy.authState.creds.registered) {
+    try {
+      const phoneNumber = await question('☘️ Masukan Nomor Yang Diawali Dengan 62 :\n')
+      const code = await lenwy.requestPairingCode(phoneNumber.trim())
+      console.log(`🎁 Pairing Code : ${code}`)
+    } catch (err) {
+      console.error('Failed to get pairing code:', err)
+    }
+  }
     // Menyimpan Sesi Login
     lenwy.ev.on("creds.update", saveCreds)
 
@@ -60,7 +69,7 @@ async function connectToWhatsApp() {
             console.log(chalk.red("❌  Koneksi Terputus, Mencoba Menyambung Ulang"))
             connectToWhatsApp()
         } else if ( connection === "open") {
-            console.log(chalk.red("✔  Bot Berhasil Terhubung Ke WhatsApp"))
+            console.log(chalk.green("✔  Bot Berhasil Terhubung Ke WhatsApp"))
         }
     })
 
