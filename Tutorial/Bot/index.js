@@ -7,10 +7,9 @@ const { resolve } = require("path")
 const { version } = require("os")
 
 // Metode Pairing
-// True = Pairing Code || False = Scan QR
 const usePairingCode = true
 
-// promt Input Terminal
+// Promt Input Terminal
 async function question(promt) {
     process.stdout.write(promt)
     const r1 = readline.createInterface({
@@ -28,9 +27,9 @@ async function question(promt) {
 async function connectToWhatsApp() {
   const { state, saveCreds } = await useMultiFileAuthState('./LenwySesi')
   
-  // Fetch latest version info
+  // Versi Terbaru
   const { version, isLatest } = await fetchLatestBaileysVersion()
-  console.log(`using WA v${version.join('.')}, isLatest: ${isLatest}`)
+  console.log(`Lenwy Using WA v${version.join('.')}, isLatest: ${isLatest}`)
 
   const lenwy = makeWASocket({
     logger: pino({ level: "silent" }),
@@ -49,7 +48,7 @@ async function connectToWhatsApp() {
     }
   })
 
-  // Handle pairing code if needed
+  // Handle Pairing Code
   if (usePairingCode && !lenwy.authState.creds.registered) {
     try {
       const phoneNumber = await question('☘️ Masukan Nomor Yang Diawali Dengan 62 :\n')
