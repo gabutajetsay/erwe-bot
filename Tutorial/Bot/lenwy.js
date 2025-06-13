@@ -57,6 +57,20 @@ case "menu": {
 }
 break
 
+// Hanya Admin
+case "admin": {
+    if (!isAdmin) return lenwyreply(mess.admin); // COntoh Penerapan Hanya Admin
+    lenwyreply("🎁 *Kamu Adalah Admin*"); // Admin Akan Menerima Pesan Ini
+}
+break
+
+// Hanya Group
+case "group": {
+    if (!isGroup) return lenwyreply(mess.group); // Contoh Penerapan Hanya Group
+    lenwyreply("🎁 *Kamu Sedang Berada Di Dalam Grup*"); // Pesan Ini Hanya Akan Dikirim Jika Di Dalam Grup
+}
+break
+
 // AI Chat
 case "ai": {
     if (!q) return lenwyreply("☘️ *Contoh:* !ai Apa itu JavaScript?");
