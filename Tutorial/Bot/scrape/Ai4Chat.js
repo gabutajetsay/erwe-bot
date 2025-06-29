@@ -1,5 +1,4 @@
-/*  
-
+/*
   Made By Lenwy
   Base : Lenwy
   WhatsApp : wa.me/6283829814737
@@ -10,38 +9,32 @@
 
   Copy Code?, Recode?, Rename?, Reupload?, Reseller? Taruh Credit Ya :D
 
-  Deskripsi: Fungsi Untuk Mengambil Respons AI
+  Deskripsi: Fungsi Untuk Mengambil Respons AI menggunakan Gemini API
   Mohon Untuk Tidak Menghapus Watermark Di Dalam Kode Ini
-
 */
 
-const axios = require('axios');
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-    async function Ai4Chat(prompt) {
-        const url = new URL("https://yw85opafq6.execute-api.us-east-1.amazonaws.com/default/boss_mode_15aug");
-        url.search = new URLSearchParams({
-            text: prompt,
-            country: "Europe",
-            user_id: "Av0SkyG00D" // Thanks To Avosky
-        }).toString();
+// GANTI 'YOUR_API_KEY' DENGAN KUNCI API ANDA!
+// Kunci API Anda adalah: AIzaSyDmMVJ3BSqlLO2eqrmTc_l-SYsUmcEL4YY
+const genAI = new GoogleGenerativeAI("AIzaSyBDCk6174FLMcldrPcG6VaQVUlByUGDkT0");
 
-        try {
-            const response = await axios.get(url.toString(), {
-                headers: {
-                    "User-Agent": "Mozilla/5.0 (Linux; Android 11; Infinix) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.0.0 Mobile Safari/537.36",
-                    Referer: "https://www.ai4chat.co/pages/riddle-generator"
-                }
-            });
+async function Ai4Chat(prompt) {
+    try {
+       // Ganti model dari "gemini-pro" ke yang lebih baru
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});
 
-            if (response.status !== 200) {
-                throw new Error(`Error: ${response.status}`);
-            }
+        // Kirim prompt ke model
+        const result = await model.generateContent(prompt);
+        const response = result.response;
+        const text = response.text();
 
-            return response.data;
-        } catch (error) {
-            console.error("Fetch error:", error.message);
-            throw error;
-        }
+        return text;
+    } catch (error) {
+        console.error("Error fetching Gemini AI response:", error);
+        // Anda bisa mengembalikan pesan error yang lebih ramah pengguna di sini
+        throw new Error("Maaf, terjadi kesalahan saat menghubungi AI.");
     }
+}
 
 module.exports = Ai4Chat;
